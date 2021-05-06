@@ -5,6 +5,8 @@ import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {AppRoutingModule} from './app-routing.module';
 import {MainModule} from './routed/main/main.module';
+import {SharedModule} from './features/shared/shared.module';
+import {CoreModule} from './features/core/core.module';
 
 @NgModule({
   declarations: [
@@ -14,6 +16,8 @@ import {MainModule} from './routed/main/main.module';
     BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
+    SharedModule,
+    CoreModule,
     MainModule,
   ],
   providers: [],
