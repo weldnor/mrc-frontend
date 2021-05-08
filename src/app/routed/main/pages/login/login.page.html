@@ -1,15 +1,19 @@
 <div class="login-form">
   <h2 class="text-center mb-3">Sign in</h2>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Email</mat-label>
-    <input type="email" matInput>
-  </mat-form-field>
+  <div class="mat-error">{{errorMessage}}</div>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Password</mat-label>
-    <input type="password" matInput>
-  </mat-form-field>
+  <div [formGroup]="loginForm" class="w-100">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>email</mat-label>
+      <input formControlName="email" matInput type="email">
+    </mat-form-field>
 
-  <button mat-raised-button color="primary">login</button>
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Password</mat-label>
+      <input formControlName="password" matInput type="password">
+    </mat-form-field>
+  </div>
+
+  <button (click)="onLoginButtonClick()" color="primary" mat-raised-button>login</button>
 </div>

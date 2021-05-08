@@ -7,7 +7,9 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatSelectModule} from '@angular/material/select';
 import {MatOptionModule} from '@angular/material/core';
 import {MatInputModule} from '@angular/material/input';
-import { RegisterPage } from './pages/register/register.page';
+import {RegisterPage} from './pages/register/register.page';
+import {ReactiveFormsModule} from '@angular/forms';
+import {UserPage} from './pages/user/user.page';
 
 
 @NgModule({
@@ -15,6 +17,7 @@ import { RegisterPage } from './pages/register/register.page';
     HomePage,
     LoginPage,
     RegisterPage,
+    UserPage,
   ],
   imports: [
     CommonModule,
@@ -23,6 +26,7 @@ import { RegisterPage } from './pages/register/register.page';
     MatSelectModule,
     MatInputModule,
     MatOptionModule,
+    ReactiveFormsModule,
   ]
 })
 export class MainModule {
