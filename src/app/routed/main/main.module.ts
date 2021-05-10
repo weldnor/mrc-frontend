@@ -8,8 +8,9 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatOptionModule} from '@angular/material/core';
 import {MatInputModule} from '@angular/material/input';
 import {RegisterPage} from './pages/register/register.page';
-import {ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {UserPage} from './pages/user/user.page';
+import {RoomPage} from './pages/room/room.page';
 
 
 @NgModule({
@@ -18,6 +19,7 @@ import {UserPage} from './pages/user/user.page';
     LoginPage,
     RegisterPage,
     UserPage,
+    RoomPage,
   ],
   imports: [
     CommonModule,
@@ -27,6 +29,7 @@ import {UserPage} from './pages/user/user.page';
     MatInputModule,
     MatOptionModule,
     ReactiveFormsModule,
+    FormsModule,
   ]
 })
 export class MainModule {
