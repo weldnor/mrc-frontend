@@ -1,5 +1,6 @@
 import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
 import {KurentoService} from '../../../../features/core/services/kurento.service';
+import {FormControl} from '@angular/forms';
 
 @Component({
   selector: 'app-room',
@@ -7,14 +8,24 @@ import {KurentoService} from '../../../../features/core/services/kurento.service
   styleUrls: ['./room.page.scss']
 })
 export class RoomPage implements AfterViewInit {
-  @ViewChild('uiLocalVideo') uiLocalVideo!: ElementRef;
-  @ViewChild('uiRemoteVideo') uiRemoteVideo!: ElementRef;
+  @ViewChild('root') rootElement!: ElementRef;
+  userIdForm = new FormControl('');
+  // private userId = 1;
+  private roomId = 1;
 
-  constructor(private readonly kurentoService: KurentoService) {
+  constructor(
+    private readonly kurentoService: KurentoService
+  ) {
+
   }
 
 
   ngAfterViewInit(): void {
-    this.kurentoService.start(this.uiLocalVideo.nativeElement, this.uiRemoteVideo.nativeElement);
+
+  }
+
+  onConnectButtonClick(): void {
+    const userId = +this.userIdForm.value;
+    this.kurentoService.start(userId, this.roomId, this.rootElement.nativeElement);
   }
 }
