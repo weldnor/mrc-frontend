@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {UserService} from '../../../../features/core/services/user.service';
 import {User} from '../../../../features/core/models/user.model';
-import {AuthService} from '../../../../features/core/services/auth.service';
+import {CurrentUserService} from '../../../../features/core/services/current-user.service';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-user',
@@ -11,17 +12,25 @@ import {AuthService} from '../../../../features/core/services/auth.service';
 export class UserPage implements OnInit {
 
   user: User;
+  currentUser: User;
 
   constructor(
     private readonly userService: UserService,
-    private readonly authService: AuthService,
+    private readonly currentUserService: CurrentUserService,
+    private readonly route: ActivatedRoute,
   ) {
+
+    currentUserService.user$.subscribe(value => {
+      this.currentUser = value;
+    });
+
+    const userId = route.snapshot.params.id;
+    this.userService.getUser(userId).subscribe(value => {
+      this.user = value;
+    });
   }
 
   ngOnInit(): void {
-    this.authService.getUser().subscribe(value => {
-      this.user = value;
-    });
   }
 
 }

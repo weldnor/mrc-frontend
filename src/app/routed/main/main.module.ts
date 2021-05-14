@@ -11,6 +11,7 @@ import {RegisterPage} from './pages/register/register.page';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {UserPage} from './pages/user/user.page';
 import {RoomPage} from './pages/room/room.page';
+import {SettingsPage} from './pages/settings/settings.page';
 
 
 @NgModule({
@@ -20,6 +21,7 @@ import {RoomPage} from './pages/room/room.page';
     RegisterPage,
     UserPage,
     RoomPage,
+    SettingsPage,
   ],
   imports: [
     CommonModule,

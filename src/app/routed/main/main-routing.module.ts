@@ -5,14 +5,17 @@ import {LoginPage} from './pages/login/login.page';
 import {RegisterPage} from './pages/register/register.page';
 import {UserPage} from './pages/user/user.page';
 import {RoomPage} from './pages/room/room.page';
+import {SettingsPage} from './pages/settings/settings.page';
+import {LoginActivateGuard} from 'src/app/features/core/guards/login-activate.guard';
 
 const routes: Routes = [
   {path: '', redirectTo: 'home', pathMatch: 'prefix'},
-  {path: 'home', component: HomePage},
+  {path: 'home', component: HomePage, canActivate: [LoginActivateGuard]},
   {path: 'login', component: LoginPage},
   {path: 'register', component: RegisterPage},
   {path: 'users/:id', component: UserPage},
   {path: 'rooms/:id', component: RoomPage},
+  {path: 'settings', component: SettingsPage},
 ];
 
 @NgModule({
