@@ -4,7 +4,7 @@ export class Participant {
 
   container: HTMLElement;
   video: HTMLVideoElement;
-  rtcPeer: any;
+  rtcPeer;
 
   constructor(
     private readonly userId: number,
@@ -35,7 +35,7 @@ export class Participant {
     console.log('Invoking SDP offer callback function');
     const msg = {
       id: 'receiveVideoFrom',
-      sender: this.userId,
+      userId: this.userId,
       sdpOffer: offerSdp
     };
     this.sendMessage(msg);

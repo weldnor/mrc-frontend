@@ -184,6 +184,7 @@ export class KurentoService {
     console.log('onParticipantLeft');
     console.log('Participant ' + request.userId + ' left');
     const participant = this.participants[request.userId];
+    console.log(participant.dispose);
     participant.dispose();
     delete this.participants[request.userId];
   }
