@@ -7,16 +7,20 @@ import {Participant} from '../participant';
   providedIn: 'root'
 })
 export class KurentoService {
-  userId: number;
+  private readonly ws: WebSocketSubject<any>;
+
+  private userId: number;
+  private roomId: number;
 
   private webRtcPeer: any;
-  roomId: number;
-  rootElement: HTMLElement;
-  private readonly ws: WebSocketSubject<any>;
-  private participants = {};
+
+  private rootElement: HTMLElement;
+
+  private participants = new Map<number, Participant>();
+  private zoomedParticipantId: number;
 
   constructor() {
-    const wsUrl = `wss://mrc21-backend.herokuapp.com/ws`;
+    const wsUrl = `ws://localhost:8080/ws`;
     console.log(wsUrl);
     this.ws = new WebSocketSubject(wsUrl);
   }
@@ -27,10 +31,17 @@ export class KurentoService {
     this.roomId = roomId;
     this.rootElement = rootElement;
 
+    this.initHtmlView();
+
     this.ws.subscribe(value => {
       this.handleMessage(value);
     });
-    this.register();
+
+    this.joinRoom();
+  }
+
+  initHtmlView(): void {
+    this.rootElement.style.display = 'flex';
   }
 
   handleMessage(message: any): void {
@@ -41,28 +52,23 @@ export class KurentoService {
         this.onExistingParticipants(message);
         break;
       case 'newParticipantArrived':
-        this.onNewParticipant(message);
+        this.onNewParticipantArrived(message);
         break;
       case 'participantLeft':
         this.onParticipantLeft(message);
         break;
       case 'receiveVideoAnswer':
-        this.receiveVideoResponse(message);
+        this.onReceiveVideoAnswer(message);
         break;
       case 'iceCandidate':
-        this.participants[message.userId].rtcPeer.addIceCandidate(message.candidate, error => {
-          if (error) {
-            console.error('Error adding candidate: ' + error);
-            return;
-          }
-        });
+        this.onIceCandidate(message);
         break;
       default:
         console.error('Unrecognized message', message);
     }
   }
 
-  register(): void {
+  joinRoom(): void {
     console.log('register');
     const message = {
       id: 'joinRoom',
@@ -73,13 +79,13 @@ export class KurentoService {
     this.sendMessage(message);
   }
 
-  onNewParticipant(request): void {
-    console.log('onNewParticipant');
-    this.receiveVideo(request.userId);
+  onNewParticipantArrived(request): void {
+    console.log('onNewParticipantArrived');
+    this.receiveVideoFrom(request.userId);
   }
 
-  receiveVideoResponse(result): void {
-    console.log('receiveVideoResponse');
+  onReceiveVideoAnswer(result): void {
+    console.log('onReceiveVideoAnswer');
     console.log(this.participants);
     console.log(result);
     this.participants[result.userId].rtcPeer.processAnswer(result.sdpAnswer, error => {
@@ -89,23 +95,11 @@ export class KurentoService {
     });
   }
 
-  callResponse(message): void {
-    console.log('callResponse');
-    if (message.response !== 'accepted') {
-      console.log('Call not accepted by peer. Closing call');
-      stop();
-    } else {
-      this.webRtcPeer.processAnswer(message.sdpAnswer, (error) => {
-        if (error) {
-          return console.error(error);
-        }
-      });
-    }
-  }
-
   onExistingParticipants(msg): void {
     console.log('onExistingParticipants');
     console.log(msg);
+
+    // ограничения на исходящее видео
     const constraints = {
       audio: true,
       video: {
@@ -116,18 +110,20 @@ export class KurentoService {
         }
       }
     };
-    console.log(this.userId + ' registered in room ' + this.roomId);
-    const participant = new Participant(this.userId, this.ws);
-    this.participants[this.userId] = participant;
-    const video = participant.video;
 
-    this.rootElement.appendChild(video);
+    console.log(this.userId + ' registered in room ' + this.roomId);
+
+    const participant = new Participant(this.userId, this.ws, this);
+    this.participants[this.userId] = participant;
+
+    this.rootElement.appendChild(participant.container);
 
     const options = {
-      localVideo: video,
+      localVideo: participant.video,
       mediaConstraints: constraints,
       onicecandidate: participant.onIceCandidate.bind(participant)
     };
+
     participant.rtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
       function(error): void {
         if (error) {
@@ -138,7 +134,7 @@ export class KurentoService {
 
     // подключаем других участников
     for (const userId of msg.data) {
-      this.receiveVideo(userId);
+      this.receiveVideoFrom(userId);
     }
   }
 
@@ -157,16 +153,15 @@ export class KurentoService {
     this.ws.complete(); // ?
   }
 
-  receiveVideo(userId): void {
+  receiveVideoFrom(userId): void {
     console.log('receiveVideo');
-    const participant = new Participant(userId, this.ws);
+    const participant = new Participant(userId, this.ws, this);
     this.participants[userId] = participant;
-    const video = participant.video;
 
-    this.rootElement.appendChild(video);
+    this.rootElement.appendChild(participant.container);
 
     const options = {
-      remoteVideo: video,
+      remoteVideo: participant.video,
       onicecandidate: participant.onIceCandidate.bind(participant)
     };
 
@@ -181,18 +176,36 @@ export class KurentoService {
   }
 
   onParticipantLeft(request): void {
+    const userId = request.userId;
     console.log('onParticipantLeft');
-    console.log('Participant ' + request.userId + ' left');
-    const participant = this.participants[request.userId];
-    console.log(participant.dispose);
-    participant.dispose();
-    delete this.participants[request.userId];
+    console.log('Participant ' + userId + ' left');
+    this.deleteParticipant(userId);
   }
 
+  deleteParticipant(userId: number): void {
+    const participant = this.participants[userId];
+    participant.dispose();
+    delete this.participants[userId];
+  }
+
+  onIceCandidate(message: any): void {
+    const userId = message.userId;
+    const candidate = message.candidate;
+    this.participants[userId].rtcPeer.addIceCandidate(candidate, error => {
+      if (error) {
+        console.error('Error adding candidate: ' + error);
+        return;
+      }
+    });
+  }
 
   sendMessage(message): void {
     console.log('sendMessage');
     console.log(`Sending message with id: ${message.id}`);
     this.ws.next(message);
+  }
+
+  onZoom(userId: number): void {
+    console.log('zoom in user ' + userId);
   }
 }

@@ -1,26 +1,59 @@
 import {WebSocketSubject} from 'rxjs/internal-compatibility';
+import {WebRtcPeer} from 'kurento-utils';
+import {KurentoService} from './services/kurento.service';
 
 export class Participant {
 
   container: HTMLElement;
   video: HTMLVideoElement;
-  rtcPeer;
+  rtcPeer: WebRtcPeer;
 
   constructor(
     private readonly userId: number,
-    private readonly ws: WebSocketSubject<any>
+    private readonly ws: WebSocketSubject<any>,
+    private readonly kurentoService: KurentoService,
   ) {
+    this.createHtmlView();
+  }
+
+  createHtmlView(): void {
     const container = document.createElement('div');
-    container.id = String(userId);
+
+    container.onclick = (e) => {
+      this.onContainerClick();
+    };
+
+    container.id = String(this.userId);
+    // container.style.display = 'flex';
+    // container.style.flexDirection = 'column';
+    container.style.width = '200px';
+    container.style.height = '200px';
+    container.style.position = 'relative';
+
+
     const span = document.createElement('span');
     const video = document.createElement('video');
 
-    container.appendChild(video);
-    container.appendChild(span);
-
-    video.id = 'video-' + userId;
+    video.id = 'video-' + this.userId;
     video.autoplay = true;
     video.controls = false;
+    video.style.width = '100%';
+    video.style.height = '100%';
+    video.style.objectFit = 'fill';
+
+    span.style.position = 'absolute';
+    span.style.top = '0px';
+    span.style.left = '0px';
+    span.style.zIndex = '2';
+    span.textContent = String(this.userId);
+    span.style.textAlign = 'center';
+    span.style.padding = '2px';
+    span.style.backgroundColor = 'black';
+    span.style.color = 'white';
+    span.style.opacity = '0.3'; /* Прозрачность слоя */
+
+    container.appendChild(span);
+    container.appendChild(video);
 
     this.container = container;
     this.video = video;
@@ -43,9 +76,6 @@ export class Participant {
 
   onIceCandidate(candidate): void {
     console.log('onIceCandidate');
-    console.log('---------------------');
-    console.log(candidate);
-    console.log('---------------------');
     const message = {
       id: 'onIceCandidate',
       candidate,
@@ -54,9 +84,24 @@ export class Participant {
     this.sendMessage(message);
   }
 
+
   sendMessage(message): void {
     console.log('sendMessage');
     console.log('Sending message: ' + JSON.stringify(message));
     this.ws.next(message);
   }
+
+  dispose(): void {
+    this.container.remove();
+    this.rtcPeer.dispose();
+  }
+
+
+  // ui handlers ----------------------------
+
+  onContainerClick(): void {
+    this.kurentoService.onZoom(this.userId);
+  }
+
+
 }
