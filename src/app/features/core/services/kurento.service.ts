@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {WebSocketSubject} from 'rxjs/internal-compatibility';
 import * as kurentoUtils from 'kurento-utils';
 import {Participant} from '../participant';
+import {environment} from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,7 @@ export class KurentoService {
   private zoomedParticipantId: number;
 
   constructor() {
-    const wsUrl = `ws://localhost:8080/ws`;
+    const wsUrl = `ws://${environment.apiHost}/ws`;
     console.log(wsUrl);
     this.ws = new WebSocketSubject(wsUrl);
   }
