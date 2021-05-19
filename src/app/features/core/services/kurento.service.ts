@@ -21,7 +21,8 @@ export class KurentoService {
   private zoomedParticipantId: number;
 
   constructor() {
-    const wsUrl = `ws://${environment.apiHost}/ws`;
+    const protocol = environment.production ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://${environment.apiHost}/ws`;
     console.log(wsUrl);
     this.ws = new WebSocketSubject(wsUrl);
   }
