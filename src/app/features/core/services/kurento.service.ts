@@ -3,32 +3,40 @@ import {WebSocketSubject} from 'rxjs/internal-compatibility';
 import * as kurentoUtils from 'kurento-utils';
 import {Participant} from '../participant';
 import {environment} from '../../../../environments/environment';
+import {interval, Subscription} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class KurentoService {
-  private readonly ws: WebSocketSubject<any>;
-
   private userId: number;
+
   private roomId: number;
-
-  private webRtcPeer: any;
-
   private rootElement: HTMLElement;
+
+  private ws: WebSocketSubject<any>;
 
   private participants = new Map<number, Participant>();
   private zoomedParticipantId: number;
 
+  private timerSubscription: Subscription;
+
   constructor() {
-    const protocol = environment.production ? 'wss' : 'ws';
-    const wsUrl = `${protocol}://${environment.apiHost}/ws`;
-    console.log(wsUrl);
-    this.ws = new WebSocketSubject(wsUrl);
   }
 
   start(userId: number, roomId: number, rootElement: HTMLElement): void {
     console.log('start');
+
+    // connect to ws
+    const protocol = environment.production ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://${environment.apiHost}/ws`;
+
+    this.ws = new WebSocketSubject(wsUrl);
+
+    this.timerSubscription = interval(5000).subscribe(() => {
+      this.sendMessage({id: 'ping'});
+    });
+
     this.userId = userId;
     this.roomId = roomId;
     this.rootElement = rootElement;
@@ -40,6 +48,11 @@ export class KurentoService {
     });
 
     this.joinRoom();
+  }
+
+  dispose(): void {
+    this.timerSubscription.unsubscribe();
+    this.ws.complete();
   }
 
   initHtmlView(): void {
@@ -64,6 +77,9 @@ export class KurentoService {
         break;
       case 'iceCandidate':
         this.onIceCandidate(message);
+        break;
+      case 'pong':
+        this.onPong();
         break;
       default:
         console.error('Unrecognized message', message);
@@ -199,6 +215,10 @@ export class KurentoService {
         return;
       }
     });
+  }
+
+  onPong(): void {
+    console.debug('pong!');
   }
 
   sendMessage(message): void {
