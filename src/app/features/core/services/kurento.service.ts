@@ -33,7 +33,7 @@ export class KurentoService {
 
     this.ws = new WebSocketSubject(wsUrl);
 
-    this.timerSubscription = interval(5000).subscribe(() => {
+    this.timerSubscription = interval(10000).subscribe(() => {
       this.sendMessage({id: 'ping'});
     });
 
