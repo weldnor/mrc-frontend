@@ -101,14 +101,14 @@ export class Participant {
   zoomIn(): void {
     this.container.style.width = '600px';
     this.container.style.height = '400px';
-    this.sendMessage({id: 'acceptFilter', targetId: this.userId});
+    this.sendMessage({id: 'declineFilter', targetId: this.userId});
     this.isZoomed = true;
   }
 
   zoomOut(): void {
     this.container.style.width = '300px';
     this.container.style.height = '200px';
-    this.sendMessage({id: 'declineFilter', targetId: this.userId});
+    this.sendMessage({id: 'acceptFilter', targetId: this.userId});
     this.isZoomed = false;
   }
 
