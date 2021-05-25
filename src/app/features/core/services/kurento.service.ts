@@ -17,7 +17,7 @@ export class KurentoService {
   private ws: WebSocketSubject<any>;
 
   private participants = new Map<number, Participant>();
-  private zoomedParticipantId: number;
+  private zoomedParticipant: Participant | undefined;
 
   private timerSubscription: Subscription;
 
@@ -227,7 +227,11 @@ export class KurentoService {
     this.ws.next(message);
   }
 
-  onZoom(userId: number): void {
-    console.log('zoom in user ' + userId);
+  onZoom(participant: Participant): void {
+    if (this.zoomedParticipant) {
+      this.zoomedParticipant.zoomOut();
+    }
+    this.zoomedParticipant = participant;
+    participant.zoomIn();
   }
 }

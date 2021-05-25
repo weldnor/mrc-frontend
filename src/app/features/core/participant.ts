@@ -7,6 +7,8 @@ export class Participant {
   container: HTMLElement;
   video: HTMLVideoElement;
   rtcPeer: WebRtcPeer;
+  isZoomed: boolean;
+
 
   constructor(
     private readonly userId: number,
@@ -19,14 +21,14 @@ export class Participant {
   createHtmlView(): void {
     const container = document.createElement('div');
 
-    container.onclick = (e) => {
+    container.onclick = () => {
       this.onContainerClick();
     };
 
     container.id = String(this.userId);
     // container.style.display = 'flex';
     // container.style.flexDirection = 'column';
-    container.style.width = '200px';
+    container.style.width = '300px';
     container.style.height = '200px';
     container.style.position = 'relative';
 
@@ -96,11 +98,29 @@ export class Participant {
     this.rtcPeer.dispose();
   }
 
+  zoomIn(): void {
+    this.container.style.width = '600px';
+    this.container.style.height = '400px';
+    this.sendMessage({id: 'acceptFilter', targetId: this.userId});
+    this.isZoomed = true;
+  }
+
+  zoomOut(): void {
+    this.container.style.width = '300px';
+    this.container.style.height = '200px';
+    this.sendMessage({id: 'declineFilter', targetId: this.userId});
+    this.isZoomed = false;
+  }
 
   // ui handlers ----------------------------
 
   onContainerClick(): void {
-    this.kurentoService.onZoom(this.userId);
+    // this.kurentoService.onZoom(this);
+    if (this.isZoomed) {
+      this.zoomOut();
+    } else {
+      this.zoomIn();
+    }
   }
 
 
